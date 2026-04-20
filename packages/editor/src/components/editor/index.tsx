@@ -33,6 +33,7 @@ import { ToolManager } from '../tools/tool-manager'
 import { ActionMenu } from '../ui/action-menu'
 import { CommandPalette, type CommandPaletteEmptyAction } from '../ui/command-palette'
 import { EditorCommands } from '../ui/command-palette/editor-commands'
+import { FloatingClearButton } from './floating-clear-button'
 import { FloatingLevelSelector } from '../ui/floating-level-selector'
 import { HelperManager } from '../ui/helpers/helper-manager'
 import { PanelManager } from '../ui/panels/panel-manager'
@@ -901,6 +902,11 @@ export default function Editor({
                   <div className="pointer-events-auto">
                     <HelperManager />
                   </div>
+                  {!isVersionPreviewMode && (
+                    <div className="pointer-events-auto">
+                      <FloatingClearButton />
+                    </div>
+                  )}
                   {viewerBanner}
                 </>
               }

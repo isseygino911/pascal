@@ -1,6 +1,9 @@
 import type { NextConfig } from 'next'
 
+const isProd = process.env.NODE_ENV === 'production';
+
 const nextConfig: NextConfig = {
+  ...(isProd && { output: 'export', basePath: '/editor', trailingSlash: true }),
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -13,13 +16,8 @@ const nextConfig: NextConfig = {
       '@react-three/drei': './node_modules/@react-three/drei',
     },
   },
-  experimental: {
-    serverActions: {
-      bodySizeLimit: '100mb',
-    },
-  },
   images: {
-    unoptimized: process.env.NEXT_PUBLIC_ASSETS_CDN_URL?.startsWith('http://localhost') ?? false,
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',

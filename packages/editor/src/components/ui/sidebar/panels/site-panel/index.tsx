@@ -10,6 +10,13 @@ import {
   useScene,
   type ZoneNode,
 } from '@pascal-app/core'
+
+const TEXT_EXTENSIONS = new Set(['.txt', '.md', '.csv', '.json', '.yaml', '.yml', '.log', '.xml'])
+
+function isTextFileName(fileName: string): boolean {
+  const ext = '.' + (fileName.split('.').pop()?.toLowerCase() ?? '')
+  return TEXT_EXTENSIONS.has(ext)
+}
 import { useViewer } from '@pascal-app/viewer'
 import {
   Camera,
@@ -443,16 +450,17 @@ const LevelReferences = memo(function LevelReferences({
     const isScan =
       file.name.toLowerCase().endsWith('.glb') || file.name.toLowerCase().endsWith('.gltf')
     const isImage = file.type.startsWith('image/')
+    const isText = isTextFileName(file.name) || file.type.startsWith('text/')
 
-    if (!(isScan || isImage)) {
+    if (!(isScan || isImage || isText)) {
       useUploadStore.getState().startUpload(levelId, 'scan', file.name)
       useUploadStore
         .getState()
-        .setError(levelId, 'Invalid file type. Please upload a .glb/.gltf scan or an image.')
+        .setError(levelId, 'Invalid file type. Please upload a .glb/.gltf scan, an image, or a text file.')
       return
     }
 
-    const type = isScan ? 'scan' : 'guide'
+    const type = isScan ? 'scan' : isText ? 'scan' : 'guide'
 
     clearUpload(levelId)
     onUploadAsset?.(projectId, levelId, file, type)
@@ -517,11 +525,15 @@ const LevelReferences = memo(function LevelReferences({
                 ) : (
                   <Plus className="h-3.5 w-3.5" />
                 )}
-                {uploading ? `Uploading ${uploadingType}... ${progress}%` : 'Upload scan/floorplan'}
+                {uploading
+                  ? uploadState?.fileName && isTextFileName(uploadState.fileName)
+                    ? `Generating 3D... ${progress}%`
+                    : `Uploading ${uploadingType}... ${progress}%`
+                  : 'Upload scan/floorplan'}
               </button>
 
               <input
-                accept=".glb,.gltf,image/jpeg,image/png,image/webp,image/gif"
+                accept=".glb,.gltf,image/jpeg,image/png,image/webp,image/gif,.txt,.md,.csv,.json,.yaml,.yml,.log"
                 className="hidden"
                 onChange={handleAddAsset}
                 ref={scanInputRef}

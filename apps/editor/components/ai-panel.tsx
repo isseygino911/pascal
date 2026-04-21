@@ -2,8 +2,10 @@
 
 import { buildHouseScene, isHouseSpec, parseHouseSpec } from '../lib/house-builder'
 import { generateHouseSpec } from '../lib/gemini'
-import { Loader2, Sparkles, TriangleAlert } from 'lucide-react'
+import { Loader2, Lock, Sparkles, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
+
+type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated'
 
 type State =
   | { status: 'idle' }
@@ -21,6 +23,10 @@ export function AiPanel() {
   const [prompt, setPrompt] = useState('')
   const [state, setState] = useState<State>({ status: 'idle' })
   const [lastSpec, setLastSpec] = useState<string | null>(null)
+  const [authStatus] = useState<AuthStatus>(() => {
+    const params = new URLSearchParams(window.location.search)
+    return params.get('auth') === '1' ? 'authenticated' : 'unauthenticated'
+  })
 
   const isLoading = state.status === 'loading'
 
@@ -51,6 +57,22 @@ export function AiPanel() {
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleGenerate()
+  }
+
+  if (authStatus === 'unauthenticated') {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+        <Lock className="h-8 w-8 text-muted-foreground/40" />
+        <p className="text-sm font-medium">Sign in to use AI</p>
+        <p className="text-xs text-muted-foreground">Generate 3D house layouts from a text description.</p>
+        <a
+          href="https://iidesign.cloud/login"
+          className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+        >
+          Sign in
+        </a>
+      </div>
+    )
   }
 
   return (
